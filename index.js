@@ -10,6 +10,8 @@ app.get("/", (req, res) => {
 
 app.post("/webhook/sendblue", async (req, res) => {
   try {
+    console.log("KEY:", process.env.SENDBLUE_API_KEY);
+    console.log("SECRET:", process.env.SENDBLUE_API_SECRET);
     console.log("BODY:", JSON.stringify(req.body, null, 2));
 
     const text = req.body?.content;
