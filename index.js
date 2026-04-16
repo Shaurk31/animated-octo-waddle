@@ -10,8 +10,6 @@ app.get("/", (req, res) => {
 
 app.post("/webhook/sendblue", async (req, res) => {
   try {
-    console.log("KEY:", process.env.SENDBLUE_API_KEY);
-    console.log("SECRET:", process.env.SENDBLUE_API_SECRET);
     console.log("BODY:", JSON.stringify(req.body, null, 2));
 
     const text = req.body?.content;
@@ -43,14 +41,16 @@ app.post("/webhook/sendblue", async (req, res) => {
       "https://api.sendblue.co/api/send-message",
       {
         number: req.body.from_number,
-        content: reply,
+        content: reply
       },
       {
-        headers: {
-          "sb-api-key": process.env.SENDBLUE_API_KEY,
-          "sb-api-secret": process.env.SENDBLUE_API_SECRET,
-          "Content-Type": "application/json",
+        auth: {
+          username: process.env.SENDBLUE_API_KEY,
+          password: process.env.SENDBLUE_API_SECRET
         },
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
     );
 
