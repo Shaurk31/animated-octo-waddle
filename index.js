@@ -10,11 +10,10 @@ app.get("/", (req, res) => {
 
 app.post("/webhook/sendblue", async (req, res) => {
   try {
-    console.log("BODY:", JSON.stringify(req.body, null, 2));
-
     const text = req.body?.content;
+    const user = req.body?.from_number;
 
-    if (!text) {
+    if (!text || !user) {
       return res.sendStatus(200);
     }
 
@@ -22,12 +21,12 @@ app.post("/webhook/sendblue", async (req, res) => {
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: text }],
+        messages: [{ role: "user", content: text }]
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        }
       }
     );
 
@@ -37,24 +36,20 @@ app.post("/webhook/sendblue", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    const sendRes = await axios.post(
-      "https://api.sendblue.co/api/send-message",
-      {
-        number: req.body.from_number,
-        content: reply
+    await axios({
+      method: "post",
+      url: "https://api.sendblue.com/api/send-message",
+      headers: {
+        "sb-api-key-id": process.env.SENDBLUE_API_KEY,
+        "sb-api-secret-key": process.env.SENDBLUE_API_SECRET,
+        "Content-Type": "application/json"
       },
-      {
-        auth: {
-          username: process.env.SENDBLUE_API_KEY,
-          password: process.env.SENDBLUE_API_SECRET
-        },
-        headers: {
-          "Content-Type": "application/json"
-        }
+      data: {
+        number: user,
+        from_number: process.env.SENDBLUE_PHONE,
+        content: reply
       }
-    );
-
-    console.log("Sendblue response:", sendRes.data);
+    });
 
     res.sendStatus(200);
   } catch (err) {
@@ -64,6 +59,4 @@ app.post("/webhook/sendblue", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT);
